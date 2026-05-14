@@ -5,42 +5,42 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>IntelligentComplaintIQ — Enterprise Analytics Dashboard</title>
   <meta name="description" content="Enterprise-grade AI-powered universal complaint intelligence platform with predictive analytics, dynamic schema detection, and advanced dashboard.">
-  <link rel="stylesheet" href="/static/css/dashboard.css?v=2.1">
+  <link rel="stylesheet" href="/static/css/dashboard.css?v=2.2">
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
 </head>
 <body>
 <div class="app-container">
 
-  <!-- Header -->
-  <header class="app-header">
-    <div class="header-brand">
+  <!-- Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-brand header-brand">
       <div class="brand-icon">🧠</div>
       <div class="brand-text">
         <h1>IntelligentComplaintIQ</h1>
-        <span>Enterprise AI Analytics Platform v2.0</span>
+        <span>Enterprise AI Analytics</span>
       </div>
+      <button onclick="document.querySelector('.sidebar').classList.toggle('collapsed')" class="header-btn" style="margin-left:auto;padding:6px 10px;" title="Toggle Sidebar">☰</button>
     </div>
-    <div class="header-actions">
-      <span class="status-dot"></span>
-      <span style="font-size:11px;color:var(--text-muted)">System Online</span>
-      <button class="header-btn" onclick="resetFilters()">↻ Reset</button>
-      <button class="header-btn primary" onclick="applyFilters()">Apply Filters</button>
-    </div>
-  </header>
+    <nav class="nav-tabs vertical" id="main-nav">
+      <button class="nav-tab active" data-tab="overview"><span class="tab-icon">📊</span>Overview</button>
+      <button class="nav-tab" data-tab="sentiment-severity"><span class="tab-icon">💬</span>Sentiment & Severity</button>
+      <button class="nav-tab" data-tab="cluster-duplicate"><span class="tab-icon">🔬</span>Cluster & Duplicate</button>
+      <button class="nav-tab" data-tab="operations-predictions"><span class="tab-icon">🏢</span>Operations & Predictive</button>
+      <button class="nav-tab" data-tab="complaints"><span class="tab-icon">📋</span>Complaints</button>
+      <button class="nav-tab" data-tab="upload" style="display:none;"></button>
+    </nav>
+  </aside>
 
-  <!-- Navigation -->
-  <nav class="nav-tabs" id="main-nav">
-    <button class="nav-tab active" data-tab="overview"><span class="tab-icon">📊</span>Overview</button>
-    <button class="nav-tab" data-tab="sentiment"><span class="tab-icon">💬</span>Sentiment</button>
-    <button class="nav-tab" data-tab="severity"><span class="tab-icon">🚨</span>Severity</button>
-    <button class="nav-tab" data-tab="clusters"><span class="tab-icon">🔬</span>Clusters</button>
-    <button class="nav-tab" data-tab="duplicates"><span class="tab-icon">🔍</span>Duplicates</button>
-    <button class="nav-tab" data-tab="departments"><span class="tab-icon">🏢</span>Operations</button>
-    <button class="nav-tab" data-tab="predictions"><span class="tab-icon">🔮</span>Predictions</button>
-    <button class="nav-tab" data-tab="complaints"><span class="tab-icon">📋</span>Complaints</button>
-    <button class="nav-tab" data-tab="analyze"><span class="tab-icon">🤖</span>AI Analyzer</button>
-    <button class="nav-tab" data-tab="upload"><span class="tab-icon">📁</span>Data Import</button>
-  </nav>
+  <!-- Main Content Wrapper -->
+  <div class="main-wrapper">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-actions">
+        <button class="header-btn" onclick="document.querySelector('[data-tab=\'upload\']').click()" title="Data Import">➕</button>
+        <button class="header-btn" onclick="resetFilters()">↻ Reset</button>
+        <button class="header-btn primary" onclick="applyFilters()">Apply Filters</button>
+      </div>
+    </header>
 
   <!-- Filters -->
   <div class="filters-bar">
@@ -57,129 +57,110 @@
     <!-- ═══ OVERVIEW ═══ -->
     <div id="panel-overview" class="tab-panel active">
       <div class="kpi-grid">
-        <div class="kpi-card"><div class="kpi-label">Total Complaints</div><div class="kpi-value" id="kpi-total">—</div></div>
-        <div class="kpi-card accent-cyan"><div class="kpi-label">Open</div><div class="kpi-value" id="kpi-open">—</div></div>
-        <div class="kpi-card accent-green"><div class="kpi-label">Resolved</div><div class="kpi-value" id="kpi-resolved">—</div></div>
-        <div class="kpi-card accent-red"><div class="kpi-label">Critical</div><div class="kpi-value" id="kpi-critical">—</div></div>
-        <div class="kpi-card accent-orange"><div class="kpi-label">Escalation Rate</div><div class="kpi-value" id="kpi-esc-rate">—</div></div>
-        <div class="kpi-card accent-green"><div class="kpi-label">Avg Resolution</div><div class="kpi-value" id="kpi-avg-time">—</div></div>
-        <div class="kpi-card accent-purple"><div class="kpi-label">Duplicate Rate</div><div class="kpi-value" id="kpi-dup-rate">—</div></div>
-        <div class="kpi-card"><div class="kpi-label">Spam Rate</div><div class="kpi-value" id="kpi-spam-rate">—</div></div>
-        <div class="kpi-card"><div class="kpi-label">CSAT Score</div><div class="kpi-value" id="kpi-csat">—</div></div>
-        <div class="kpi-card"><div class="kpi-label">NPS Score</div><div class="kpi-value" id="kpi-nps">—</div></div>
+        <div class="kpi-card"><div class="kpi-header"><div class="kpi-label">Total Complaints</div><div class="kpi-icon">📋</div></div><div class="kpi-body"><div class="kpi-value" id="kpi-total">—</div><div class="kpi-trend neutral"><span class="trend-arrow">↑</span> 8.4%</div></div><div class="kpi-sub">vs last month</div></div>
+        <div class="kpi-card accent-cyan"><div class="kpi-header"><div class="kpi-label">Open</div><div class="kpi-icon">⏳</div></div><div class="kpi-body"><div class="kpi-value" id="kpi-open">—</div><div class="kpi-trend neutral"><span class="trend-arrow">↑</span> 12</div></div><div class="kpi-sub">pending review</div></div>
+        <div class="kpi-card accent-green"><div class="kpi-header"><div class="kpi-label">Resolved</div><div class="kpi-icon">✅</div></div><div class="kpi-body"><div class="kpi-value" id="kpi-resolved">—</div><div class="kpi-trend positive"><span class="trend-arrow">↑</span> 15%</div></div><div class="kpi-sub">successfully closed</div></div>
+        <div class="kpi-card accent-red"><div class="kpi-header"><div class="kpi-label">Critical</div><div class="kpi-icon">🚨</div></div><div class="kpi-body"><div class="kpi-value" id="kpi-critical">—</div><div class="kpi-trend negative"><span class="trend-arrow">↑</span> 2.1%</div></div><div class="kpi-sub">requires attention</div></div>
+        <div class="kpi-card accent-orange"><div class="kpi-header"><div class="kpi-label">Escalation Rate</div><div class="kpi-icon">⚠️</div></div><div class="kpi-body"><div class="kpi-value" id="kpi-esc-rate">—</div><div class="kpi-trend warning"><span class="trend-arrow">↑</span> 1.5%</div></div><div class="kpi-sub">risk of escalation</div></div>
+        <div class="kpi-card accent-green"><div class="kpi-header"><div class="kpi-label">Avg Resolution</div><div class="kpi-icon">⏱️</div></div><div class="kpi-body"><div class="kpi-value" id="kpi-avg-time">—</div><div class="kpi-trend positive"><span class="trend-arrow">↓</span> 1.2h</div></div><div class="kpi-sub">faster than avg</div></div>
+        <div class="kpi-card accent-purple"><div class="kpi-header"><div class="kpi-label">Duplicate Rate</div><div class="kpi-icon">🔄</div></div><div class="kpi-body"><div class="kpi-value" id="kpi-dup-rate">—</div><div class="kpi-trend positive"><span class="trend-arrow">↓</span> 2.1%</div></div><div class="kpi-sub">redundant logs</div></div>
+        <div class="kpi-card"><div class="kpi-header"><div class="kpi-label">Spam Rate</div><div class="kpi-icon">🗑️</div></div><div class="kpi-body"><div class="kpi-value" id="kpi-spam-rate">—</div><div class="kpi-trend positive"><span class="trend-arrow">↓</span> 0.5%</div></div><div class="kpi-sub">filtered noise</div></div>
+        <div class="kpi-card"><div class="kpi-header"><div class="kpi-label">CSAT Score</div><div class="kpi-icon">⭐</div></div><div class="kpi-body"><div class="kpi-value" id="kpi-csat">—</div><div class="kpi-trend positive"><span class="trend-arrow">↑</span> 2.1</div></div><div class="kpi-sub">customer satisfaction</div></div>
+        <div class="kpi-card"><div class="kpi-header"><div class="kpi-label">NPS Score</div><div class="kpi-icon">📈</div></div><div class="kpi-body"><div class="kpi-value" id="kpi-nps">—</div><div class="kpi-trend positive"><span class="trend-arrow">↑</span> 5.0</div></div><div class="kpi-sub">net promoter score</div></div>
       </div>
+
+
+
       <div class="chart-grid">
-        <div class="chart-card"><div class="chart-header"><div><div class="chart-title">Complaint Status</div></div></div><div class="chart-container"><canvas id="chart-status"></canvas></div></div>
-        <div class="chart-card"><div class="chart-header"><div><div class="chart-title">Severity Distribution</div></div></div><div class="chart-container"><canvas id="chart-severity-overview"></canvas></div></div>
-        <div class="chart-card"><div class="chart-header"><div><div class="chart-title">Sentiment Overview</div></div></div><div class="chart-container"><canvas id="chart-sentiment-overview"></canvas></div></div>
-        <div class="chart-card"><div class="chart-header"><div><div class="chart-title">Complaints by Product</div></div></div><div class="chart-container"><canvas id="chart-products-overview"></canvas></div></div>
+        <div class="chart-card accent-cyan"><div class="chart-header"><div><div class="chart-title">Complaint Status</div></div></div><div class="chart-container"><canvas id="chart-status"></canvas></div></div>
+        <div class="chart-card accent-red"><div class="chart-header"><div><div class="chart-title">Severity Distribution</div></div></div><div class="chart-container"><canvas id="chart-severity-overview"></canvas></div></div>
+        <div class="chart-card accent-green"><div class="chart-header"><div><div class="chart-title">Sentiment Overview</div></div></div><div class="chart-container"><canvas id="chart-sentiment-overview"></canvas></div></div>
+        <div class="chart-card accent-orange"><div class="chart-header"><div><div class="chart-title">Complaints by Product</div></div></div><div class="chart-container"><canvas id="chart-products-overview"></canvas></div></div>
       </div>
     </div>
 
-    <!-- ═══ SENTIMENT ═══ -->
-    <div id="panel-sentiment" class="tab-panel">
+    <!-- ═══ SENTIMENT & SEVERITY ═══ -->
+    <div id="panel-sentiment-severity" class="tab-panel">
       <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
-        <div class="kpi-card"><div class="kpi-label">Avg Sentiment</div><div class="kpi-value" id="kpi-avg-sentiment">—</div></div>
-        <div class="kpi-card accent-red"><div class="kpi-label">Frustration Index</div><div class="kpi-value" id="kpi-frustration">—</div></div>
-        <div class="kpi-card accent-orange"><div class="kpi-label">Escalation Prob</div><div class="kpi-value" id="kpi-esc-prob">—</div></div>
-        <div class="kpi-card accent-green"><div class="kpi-label">Positive %</div><div class="kpi-value" id="kpi-positive-pct">—</div></div>
+        <div class="kpi-card"><div class="kpi-header"><div class="kpi-label">Avg Sentiment</div><div class="kpi-icon">🧠</div></div><div class="kpi-body"><div class="kpi-value" id="kpi-avg-sentiment">—</div><div class="kpi-trend neutral"><span class="trend-arrow">↑</span> 0.15</div></div><div class="kpi-sub">overall mood</div></div>
+        <div class="kpi-card accent-red"><div class="kpi-header"><div class="kpi-label">Frustration Index</div><div class="kpi-icon">😤</div></div><div class="kpi-body"><div class="kpi-value" id="kpi-frustration">—</div><div class="kpi-trend negative"><span class="trend-arrow">↑</span> 3.2%</div></div><div class="kpi-sub">customer friction</div></div>
+        <div class="kpi-card accent-orange"><div class="kpi-header"><div class="kpi-label">Escalation Prob</div><div class="kpi-icon">⚠️</div></div><div class="kpi-body"><div class="kpi-value" id="kpi-esc-prob">—</div><div class="kpi-trend warning"><span class="trend-arrow">↑</span> 1.5%</div></div><div class="kpi-sub">risk of escalation</div></div>
+        <div class="kpi-card accent-green"><div class="kpi-header"><div class="kpi-label">Positive %</div><div class="kpi-icon">✨</div></div><div class="kpi-body"><div class="kpi-value" id="kpi-positive-pct">—</div><div class="kpi-trend positive"><span class="trend-arrow">↑</span> 4.8%</div></div><div class="kpi-sub">positive interactions</div></div>
+        <div class="kpi-card accent-red"><div class="kpi-header"><div class="kpi-label">Critical Issues</div><div class="kpi-icon">🚨</div></div><div class="kpi-body"><div class="kpi-value" id="kpi-critical-sev">—</div><div class="kpi-trend negative"><span class="trend-arrow">↑</span> 5</div></div><div class="kpi-sub">immediate action req</div></div>
+        <div class="kpi-card accent-orange"><div class="kpi-header"><div class="kpi-label">High Priority</div><div class="kpi-icon">🔥</div></div><div class="kpi-body"><div class="kpi-value" id="kpi-high-sev">—</div><div class="kpi-trend neutral"><span class="trend-arrow">↑</span> 12</div></div><div class="kpi-sub">pending triage</div></div>
+        <div class="kpi-card"><div class="kpi-header"><div class="kpi-label">Avg Severity</div><div class="kpi-icon">📊</div></div><div class="kpi-body"><div class="kpi-value" id="kpi-avg-severity">—</div><div class="kpi-trend neutral"><span class="trend-arrow">↑</span> 0.2</div></div><div class="kpi-sub">score scale</div></div>
+        <div class="kpi-card accent-red"><div class="kpi-header"><div class="kpi-label">Safety Issues</div><div class="kpi-icon">🛡️</div></div><div class="kpi-body"><div class="kpi-value" id="kpi-safety">—</div><div class="kpi-trend negative"><span class="trend-arrow">↑</span> 2</div></div><div class="kpi-sub">compliance risk</div></div>
       </div>
       <div class="chart-grid">
-        <div class="chart-card"><div class="chart-header"><div><div class="chart-title">Sentiment Distribution</div></div></div><div class="chart-container"><canvas id="chart-sentiment-dist"></canvas></div></div>
-        <div class="chart-card"><div class="chart-header"><div><div class="chart-title">Emotion Heatmap</div></div></div><div class="chart-container"><canvas id="chart-emotions"></canvas></div></div>
-        <div class="chart-card span-2"><div class="chart-header"><div><div class="chart-title">Sentiment Trend Over Time</div></div></div><div class="chart-container"><canvas id="chart-sentiment-trend"></canvas></div></div>
-        <div class="chart-card span-2"><div class="chart-header"><div><div class="chart-title">Sentiment by Product</div></div></div><div class="chart-container"><canvas id="chart-sentiment-product"></canvas></div></div>
+        <div class="chart-card accent-green"><div class="chart-header"><div><div class="chart-title">Sentiment Distribution</div></div></div><div class="chart-container"><canvas id="chart-sentiment-dist"></canvas></div></div>
+        <div class="chart-card accent-pink"><div class="chart-header"><div><div class="chart-title">Emotion Distribution</div></div></div><div class="chart-container" style="overflow-y:auto;"><div id="chart-emotions" class="emotion-bars-container"></div></div></div>
+        <div class="chart-card accent-red"><div class="chart-header"><div><div class="chart-title">Severity Breakdown</div></div></div><div class="chart-container"><canvas id="chart-severity-dist"></canvas></div></div>
+        <div class="chart-card accent-orange"><div class="chart-header"><div><div class="chart-title">Urgency Distribution</div></div></div><div class="chart-container"><canvas id="chart-urgency"></canvas></div></div>
+        <div class="chart-card span-2 accent-cyan"><div class="chart-header"><div><div class="chart-title">Sentiment Trend Over Time</div></div></div><div class="chart-container"><canvas id="chart-sentiment-trend"></canvas></div></div>
+        <div class="chart-card span-2 accent-red"><div class="chart-header"><div><div class="chart-title">Severity Trend</div></div></div><div class="chart-container"><canvas id="chart-severity-trend"></canvas></div></div>
+        <div class="chart-card span-2 accent-purple"><div class="chart-header"><div><div class="chart-title">Sentiment by Product</div></div></div><div class="chart-container"><canvas id="chart-sentiment-product"></canvas></div></div>
       </div>
-    </div>
-
-    <!-- ═══ SEVERITY ═══ -->
-    <div id="panel-severity" class="tab-panel">
-      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
-        <div class="kpi-card accent-red"><div class="kpi-label">Critical Issues</div><div class="kpi-value" id="kpi-critical-sev">—</div></div>
-        <div class="kpi-card accent-orange"><div class="kpi-label">High Priority</div><div class="kpi-value" id="kpi-high-sev">—</div></div>
-        <div class="kpi-card"><div class="kpi-label">Avg Severity</div><div class="kpi-value" id="kpi-avg-severity">—</div></div>
-        <div class="kpi-card accent-red"><div class="kpi-label">Safety Issues</div><div class="kpi-value" id="kpi-safety">—</div></div>
-      </div>
-      <div class="chart-grid">
-        <div class="chart-card"><div class="chart-header"><div><div class="chart-title">Severity Breakdown</div></div></div><div class="chart-container"><canvas id="chart-severity-dist"></canvas></div></div>
-        <div class="chart-card"><div class="chart-header"><div><div class="chart-title">Urgency Distribution</div></div></div><div class="chart-container"><canvas id="chart-urgency"></canvas></div></div>
-        <div class="chart-card span-2"><div class="chart-header"><div><div class="chart-title">Severity Trend</div></div></div><div class="chart-container"><canvas id="chart-severity-trend"></canvas></div></div>
-      </div>
-      <div class="alerts-panel">
+      <div class="alerts-panel accent-red">
         <div class="chart-header"><div><div class="chart-title">🚨 Critical Alerts</div><div class="chart-subtitle">Recent critical-severity complaints</div></div></div>
         <div id="severity-alerts"><p style="color:var(--text-muted);padding:20px;text-align:center;">Loading...</p></div>
       </div>
     </div>
 
-    <!-- ═══ CLUSTERS ═══ -->
-    <div id="panel-clusters" class="tab-panel">
-      <div class="chart-grid">
-        <div class="chart-card"><div class="chart-header"><div><div class="chart-title">Complaint Clusters</div><div class="chart-subtitle">ML-identified groups</div></div></div><div class="chart-container"><canvas id="chart-cluster-dist"></canvas></div></div>
-        <div class="chart-card"><div class="chart-header"><div><div class="chart-title">Cluster Proportions</div></div></div><div class="chart-container"><canvas id="chart-cluster-pie"></canvas></div></div>
-        <div class="chart-card span-2"><div class="chart-header"><div><div class="chart-title">Cluster Trends</div></div></div><div class="chart-container"><canvas id="chart-cluster-trend"></canvas></div></div>
+    <!-- ═══ CLUSTERS & DUPLICATES ═══ -->
+    <div id="panel-cluster-duplicate" class="tab-panel">
+      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+        <div class="kpi-card accent-orange"><div class="kpi-header"><div class="kpi-label">Duplicates Found</div><div class="kpi-icon">🔄</div></div><div class="kpi-body"><div class="kpi-value" id="kpi-dup-count">—</div><div class="kpi-trend neutral"><span class="trend-arrow">↑</span> 14</div></div><div class="kpi-sub">redundant records</div></div>
+        <div class="kpi-card accent-red"><div class="kpi-header"><div class="kpi-label">Spam Detected</div><div class="kpi-icon">🗑️</div></div><div class="kpi-body"><div class="kpi-value" id="kpi-spam-count">—</div><div class="kpi-trend neutral"><span class="trend-arrow">↑</span> 8</div></div><div class="kpi-sub">filtered noise</div></div>
+        <div class="kpi-card accent-purple"><div class="kpi-header"><div class="kpi-label">Duplicate Rate</div><div class="kpi-icon">📉</div></div><div class="kpi-body"><div class="kpi-value" id="kpi-dup-rate2">—</div><div class="kpi-trend positive"><span class="trend-arrow">↓</span> 2.1%</div></div><div class="kpi-sub">efficiency gain</div></div>
+        <div class="kpi-card"><div class="kpi-header"><div class="kpi-label">Spam Rate</div><div class="kpi-icon">🛡️</div></div><div class="kpi-body"><div class="kpi-value" id="kpi-spam-rate2">—</div><div class="kpi-trend positive"><span class="trend-arrow">↓</span> 0.5%</div></div><div class="kpi-sub">cleanliness metric</div></div>
       </div>
-      <div class="chart-card" style="margin-bottom:24px">
+      <div class="chart-grid">
+        <div class="chart-card accent-purple"><div class="chart-header"><div><div class="chart-title">Complaint Clusters</div><div class="chart-subtitle">ML-identified groups</div></div></div><div class="chart-container"><canvas id="chart-cluster-dist"></canvas></div></div>
+        <div class="chart-card accent-cyan"><div class="chart-header"><div><div class="chart-title">Cluster Proportions</div></div></div><div class="chart-container"><canvas id="chart-cluster-pie"></canvas></div></div>
+        <div class="chart-card span-2 accent-pink"><div class="chart-header"><div><div class="chart-title">Cluster Trends</div></div></div><div class="chart-container"><canvas id="chart-cluster-trend"></canvas></div></div>
+        <div class="chart-card accent-red"><div class="chart-header"><div><div class="chart-title">Toxicity Distribution</div></div></div><div class="chart-container"><canvas id="chart-toxicity"></canvas></div></div>
+        <div class="chart-card accent-orange"><div class="chart-header"><div><div class="chart-title">Spam by Channel</div></div></div><div class="chart-container"><canvas id="chart-spam-channel"></canvas></div></div>
+      </div>
+      <div class="chart-card accent-purple" style="margin-bottom:24px">
         <div class="chart-header"><div><div class="chart-title">Root Cause Analysis</div><div class="chart-subtitle">Top products and severity per cluster</div></div></div>
         <div id="cluster-details" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;"></div>
       </div>
-    </div>
-
-    <!-- ═══ DUPLICATES & SPAM ═══ -->
-    <div id="panel-duplicates" class="tab-panel">
-      <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
-        <div class="kpi-card accent-orange"><div class="kpi-label">Duplicates Found</div><div class="kpi-value" id="kpi-dup-count">—</div></div>
-        <div class="kpi-card accent-red"><div class="kpi-label">Spam Detected</div><div class="kpi-value" id="kpi-spam-count">—</div></div>
-        <div class="kpi-card accent-purple"><div class="kpi-label">Duplicate Rate</div><div class="kpi-value" id="kpi-dup-rate2">—</div></div>
-        <div class="kpi-card"><div class="kpi-label">Spam Rate</div><div class="kpi-value" id="kpi-spam-rate2">—</div></div>
-      </div>
-      <div class="chart-grid">
-        <div class="chart-card"><div class="chart-header"><div><div class="chart-title">Toxicity Distribution</div></div></div><div class="chart-container"><canvas id="chart-toxicity"></canvas></div></div>
-        <div class="chart-card"><div class="chart-header"><div><div class="chart-title">Spam by Channel</div></div></div><div class="chart-container"><canvas id="chart-spam-channel"></canvas></div></div>
-      </div>
-      <div class="alerts-panel">
+      <div class="alerts-panel accent-orange">
         <div class="chart-header"><div><div class="chart-title">⚠️ Duplicate Groups</div><div class="chart-subtitle">Complaints identified as duplicates</div></div></div>
         <div id="duplicate-groups"><p style="color:var(--text-muted);padding:20px;text-align:center;">Loading...</p></div>
       </div>
-      <div class="alerts-panel">
+      <div class="alerts-panel accent-red">
         <div class="chart-header"><div><div class="chart-title">🚫 Fraud Alerts</div></div></div>
         <div id="fraud-alerts"><p style="color:var(--text-muted);padding:20px;text-align:center;">Loading...</p></div>
       </div>
     </div>
 
-    <!-- ═══ OPERATIONS ═══ -->
-    <div id="panel-departments" class="tab-panel">
+    <!-- ═══ OPERATIONS & PREDICTIONS ═══ -->
+    <div id="panel-operations-predictions" class="tab-panel">
       <div class="kpi-grid" style="grid-template-columns:repeat(4,1fr)">
-        <div class="kpi-card accent-green"><div class="kpi-label">SLA Compliance</div><div class="kpi-value" id="kpi-sla">—</div></div>
-        <div class="kpi-card"><div class="kpi-label">Mean Resolution Time</div><div class="kpi-value" id="kpi-mttr">—</div></div>
-        <div class="kpi-card accent-orange"><div class="kpi-label">Escalation Handling</div><div class="kpi-value" id="kpi-esc-time">—</div></div>
-        <div class="kpi-card accent-cyan"><div class="kpi-label">Departments Active</div><div class="kpi-value" id="kpi-dept-count">—</div></div>
+        <div class="kpi-card accent-green"><div class="kpi-header"><div class="kpi-label">SLA Compliance</div><div class="kpi-icon">✅</div></div><div class="kpi-body"><div class="kpi-value" id="kpi-sla">—</div><div class="kpi-trend positive"><span class="trend-arrow">↑</span> 4.2%</div></div><div class="kpi-sub">on-time resolution</div></div>
+        <div class="kpi-card"><div class="kpi-header"><div class="kpi-label">Mean Resolution Time</div><div class="kpi-icon">⏱️</div></div><div class="kpi-body"><div class="kpi-value" id="kpi-mttr">—</div><div class="kpi-trend positive"><span class="trend-arrow">↓</span> 1.5h</div></div><div class="kpi-sub">efficiency tracking</div></div>
+        <div class="kpi-card accent-orange"><div class="kpi-header"><div class="kpi-label">Escalation Handling</div><div class="kpi-icon">⚠️</div></div><div class="kpi-body"><div class="kpi-value" id="kpi-esc-time">—</div><div class="kpi-trend warning"><span class="trend-arrow">↑</span> 2.4h</div></div><div class="kpi-sub">avg time to escalate</div></div>
+        <div class="kpi-card accent-cyan"><div class="kpi-header"><div class="kpi-label">Departments Active</div><div class="kpi-icon">🏢</div></div><div class="kpi-body"><div class="kpi-value" id="kpi-dept-count">—</div><div class="kpi-trend neutral"><span class="trend-arrow">↑</span> 1</div></div><div class="kpi-sub">routing endpoints</div></div>
+        <div class="kpi-card accent-red"><div class="kpi-header"><div class="kpi-label">Churn Risk %</div><div class="kpi-icon">🏃</div></div><div class="kpi-body"><div class="kpi-value" id="kpi-churn-risk">—</div><div class="kpi-trend negative"><span class="trend-arrow">↑</span> 3.1%</div></div><div class="kpi-sub">predictive risk model</div></div>
+        <div class="kpi-card accent-orange"><div class="kpi-header"><div class="kpi-label">At-Risk Customers</div><div class="kpi-icon">🔔</div></div><div class="kpi-body"><div class="kpi-value" id="kpi-churn-count">—</div><div class="kpi-trend negative"><span class="trend-arrow">↑</span> 24</div></div><div class="kpi-sub">requires intervention</div></div>
       </div>
       <div class="chart-grid">
-        <div class="chart-card"><div class="chart-header"><div><div class="chart-title">Complaints by Department</div></div></div><div class="chart-container"><canvas id="chart-dept-dist"></canvas></div></div>
-        <div class="chart-card"><div class="chart-header"><div><div class="chart-title">Resolution Rate by Dept</div></div></div><div class="chart-container"><canvas id="chart-dept-resolution"></canvas></div></div>
-        <div class="chart-card span-2"><div class="chart-header"><div><div class="chart-title">Avg Resolution Time by Dept</div></div></div><div class="chart-container"><canvas id="chart-dept-time"></canvas></div></div>
+        <div class="chart-card accent-cyan"><div class="chart-header"><div><div class="chart-title">Complaints by Department</div></div></div><div class="chart-container"><canvas id="chart-dept-dist"></canvas></div></div>
+        <div class="chart-card accent-green"><div class="chart-header"><div><div class="chart-title">Resolution Rate by Dept</div></div></div><div class="chart-container"><canvas id="chart-dept-resolution"></canvas></div></div>
+        <div class="chart-card span-2 accent-orange"><div class="chart-header"><div><div class="chart-title">Avg Resolution Time by Dept</div></div></div><div class="chart-container"><canvas id="chart-dept-time"></canvas></div></div>
+        <div class="chart-card accent-purple"><div class="chart-header"><div><div class="chart-title">📈 Complaint Volume Forecast</div></div></div><div class="chart-container"><canvas id="chart-forecast"></canvas></div></div>
+        <div class="chart-card accent-pink"><div class="chart-header"><div><div class="chart-title">📅 Seasonal Patterns</div></div></div><div class="chart-container"><canvas id="chart-seasonal"></canvas></div></div>
       </div>
-      <div class="table-container">
+      <div class="table-container accent-cyan">
         <div class="table-toolbar"><div class="chart-title">Department Performance</div></div>
         <table class="data-table"><thead><tr><th>Department</th><th>Total</th><th>Resolved</th><th>Rate</th><th>Avg Time</th><th>Escalated</th><th>CSAT</th></tr></thead><tbody id="dept-table-body"></tbody></table>
       </div>
-    </div>
-
-    <!-- ═══ PREDICTIONS ═══ -->
-    <div id="panel-predictions" class="tab-panel">
-      <div class="kpi-grid" style="grid-template-columns:repeat(2,1fr)">
-        <div class="kpi-card accent-red"><div class="kpi-label">Churn Risk %</div><div class="kpi-value" id="kpi-churn-risk">—</div></div>
-        <div class="kpi-card accent-orange"><div class="kpi-label">At-Risk Customers</div><div class="kpi-value" id="kpi-churn-count">—</div></div>
-      </div>
       <div class="chart-grid">
-        <div class="chart-card"><div class="chart-header"><div><div class="chart-title">📈 Complaint Volume Forecast</div></div></div><div class="chart-container"><canvas id="chart-forecast"></canvas></div></div>
-        <div class="chart-card"><div class="chart-header"><div><div class="chart-title">📅 Seasonal Patterns</div></div></div><div class="chart-container"><canvas id="chart-seasonal"></canvas></div></div>
+        <div class="chart-card accent-orange"><div class="chart-header"><div><div class="chart-title">⚠️ Emerging Issues</div></div></div><div id="emerging-issues" style="max-height:300px;overflow-y:auto;"><p style="color:var(--text-muted);text-align:center;padding:40px;">Loading...</p></div></div>
+        <div class="chart-card accent-red"><div class="chart-header"><div><div class="chart-title">🔧 Equipment Failure Risk</div></div></div><div id="equipment-failures" style="max-height:300px;overflow-y:auto;"><p style="color:var(--text-muted);text-align:center;padding:40px;">Loading...</p></div></div>
       </div>
-      <div class="chart-grid">
-        <div class="chart-card"><div class="chart-header"><div><div class="chart-title">⚠️ Emerging Issues</div></div></div><div id="emerging-issues" style="max-height:300px;overflow-y:auto;"><p style="color:var(--text-muted);text-align:center;padding:40px;">Loading...</p></div></div>
-        <div class="chart-card"><div class="chart-header"><div><div class="chart-title">🔧 Equipment Failure Risk</div></div></div><div id="equipment-failures" style="max-height:300px;overflow-y:auto;"><p style="color:var(--text-muted);text-align:center;padding:40px;">Loading...</p></div></div>
-      </div>
-      <div class="chart-card" style="margin-bottom:24px">
+      <div class="chart-card accent-green" style="margin-bottom:24px">
         <div class="chart-header"><div><div class="chart-title">💡 AI Recommendations</div></div></div>
         <div id="recommendations-list"><p style="color:var(--text-muted);text-align:center;padding:40px;">Loading...</p></div>
       </div>
@@ -187,14 +168,14 @@
 
     <!-- ═══ COMPLAINTS ═══ -->
     <div id="panel-complaints" class="tab-panel">
-      <div class="table-container">
+      <div class="table-container accent-cyan">
         <div class="table-toolbar">
           <input type="text" id="complaint-search" class="table-search" placeholder="🔍 Search complaints..." onkeyup="if(event.key==='Enter')searchComplaints()">
           <button class="header-btn primary" onclick="searchComplaints()">Search</button>
         </div>
         <div style="overflow-x:auto;">
           <table class="data-table"><thead><tr>
-            <th>ID</th><th>Date</th><th>Product</th><th>Category</th><th>Description</th><th>Sentiment</th><th>Severity</th><th>Department</th><th>Status</th><th>Flags</th>
+            <th>ID</th><th>Date</th><th>Product</th><th>Category</th><th>Description</th><th>Sentiment</th><th>Severity</th><th>Department</th><th>Status</th>
           </tr></thead><tbody id="complaints-tbody"></tbody></table>
         </div>
         <div class="table-pagination">
@@ -204,19 +185,9 @@
       </div>
     </div>
 
-    <!-- ═══ AI ANALYZER ═══ -->
-    <div id="panel-analyze" class="tab-panel">
-      <div class="analyze-panel">
-        <div class="chart-header"><div><div class="chart-title">🤖 Enterprise AI Complaint Analyzer</div><div class="chart-subtitle">Full 10-module AI analysis: Sentiment, Emotion, Category, Severity, Routing, Spam, Duplicate, Resolution, Escalation</div></div></div>
-        <textarea id="analyze-text" class="analyze-textarea" placeholder="Paste any HVAC complaint here for instant AI analysis...&#10;&#10;Example: Our central AC unit stopped cooling entirely. Indoor temperature is 95°F. System blowing warm air with loud grinding noise. We have elderly family members — this is a health concern. Called 3 times with no callback."></textarea>
-        <button id="analyze-btn" class="analyze-btn" onclick="analyzeComplaint()">🔍 Run Full AI Analysis</button>
-        <div id="analyze-results" class="analyze-results" style="display:none;"></div>
-      </div>
-    </div>
-
     <!-- ═══ DATA IMPORT ═══ -->
     <div id="panel-upload" class="tab-panel">
-      <div class="upload-panel">
+      <div class="upload-panel accent-purple">
         <div class="chart-header"><div><div class="chart-title">📁 Universal AI Dataset Analyzer</div><div class="chart-subtitle">Upload ANY dataset — AI auto-detects schema, maps columns, and runs intelligent analysis</div></div></div>
         <div class="upload-zone" id="upload-zone" onclick="document.getElementById('file-input').click()">
           <div class="upload-icon">📤</div>
@@ -235,13 +206,38 @@
       <div id="dynamic-details" style="display:none;margin-bottom:24px;"></div>
     </div>
 
+    <!-- ═══ FLOATING AI ASSISTANT ═══ -->
+    <button class="ai-fab" onclick="document.getElementById('ai-drawer').classList.add('open')" title="Open AI Copilot">
+      <span class="ai-fab-icon">✨</span>
+    </button>
+
+    <div id="ai-drawer" class="ai-drawer">
+      <div class="ai-drawer-header">
+        <div class="ai-drawer-title">🤖 Intelligent AI Copilot</div>
+        <button class="header-btn" onclick="document.getElementById('ai-drawer').classList.remove('open')" style="padding:4px 8px;">✕</button>
+      </div>
+      <div class="ai-drawer-body">
+        <div class="chart-subtitle" style="margin-bottom:16px;">Enterprise operations assistant. Paste a complaint or query below for instant insights, risk alerts, and routing recommendations.</div>
+        <textarea id="analyze-text" class="analyze-textarea" placeholder="Paste any HVAC complaint here for instant AI analysis...&#10;&#10;Example: Our central AC unit stopped cooling entirely. Indoor temperature is 95°F. System blowing warm air with loud grinding noise..."></textarea>
+        <div class="ai-quick-actions">
+          <span style="font-size:11px;color:var(--text-muted);align-self:center;margin-right:8px;">Quick Actions:</span>
+          <button class="quick-action-btn" onclick="document.getElementById('analyze-text').value='AC completely stopped working, very hot inside, please fix asap'; document.getElementById('analyze-btn').click();">⚡ Critical Outage</button>
+          <button class="quick-action-btn" onclick="document.getElementById('analyze-text').value='Making a weird rattling noise but still cooling'; document.getElementById('analyze-btn').click();">🔊 Noise Issue</button>
+          <button class="quick-action-btn" onclick="document.getElementById('analyze-text').value='Tech was rude and left a mess in my house'; document.getElementById('analyze-btn').click();">😠 Service</button>
+        </div>
+        <button id="analyze-btn" class="analyze-btn" style="width:100%;margin-top:8px;" onclick="analyzeComplaint()">✨ Generate AI Insights</button>
+        <div id="analyze-results" class="analyze-results" style="display:none;margin-top:24px;border-top:1px solid rgba(255,255,255,0.05);padding-top:24px;"></div>
+      </div>
+    </div>
+
   </main>
+  </div>
 </div>
 
 <div id="loading" class="loading-overlay"><div class="spinner"></div><div class="loading-text">Initializing Intelligence System...</div></div>
 
-<script src="/static/js/api.js?v=2.1"></script>
-<script src="/static/js/charts.js?v=2.1"></script>
-<script src="/static/js/app.js?v=2.1"></script>
+<script src="/static/js/api.js?v=2.2"></script>
+<script src="/static/js/charts.js?v=2.2"></script>
+<script src="/static/js/app.js?v=2.2"></script>
 </body>
 </html>

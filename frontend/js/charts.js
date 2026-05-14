@@ -18,7 +18,7 @@ function destroyChart(id) {
 const CHART_DEFAULTS = {
   responsive: true, maintainAspectRatio: false,
   plugins: {
-    legend: { labels: { color: '#94a3b8', font: { family: 'Inter', size: 11 }, padding: 12, usePointStyle: true, pointStyleWidth: 8 } },
+    legend: { position: 'top', align: 'end', labels: { color: '#94a3b8', font: { family: 'Inter', size: 10 }, padding: 8, boxWidth: 8, usePointStyle: true, pointStyleWidth: 8 } },
     tooltip: { backgroundColor: 'rgba(17,24,39,0.95)', titleColor: '#f1f5f9', bodyColor: '#94a3b8', borderColor: 'rgba(99,102,241,0.3)', borderWidth: 1, padding: 10, cornerRadius: 8, titleFont: { family: 'Inter', size: 12, weight: '600' }, bodyFont: { family: 'Inter', size: 11 } }
   },
   scales: {
@@ -50,7 +50,7 @@ function createDoughnut(canvasId, data, colors) {
   return createChart(canvasId, 'doughnut', labels, [{
     data: values, backgroundColor: bgColors,
     borderColor: 'rgba(10,14,26,0.8)', borderWidth: 2, hoverOffset: 6,
-  }], { cutout: '65%', plugins: { legend: { position: 'right' } } });
+  }], { cutout: '65%' });
 }
 
 function createBar(canvasId, labels, values, color, label = 'Count') {

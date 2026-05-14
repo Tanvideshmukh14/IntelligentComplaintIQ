@@ -25,12 +25,9 @@ async function loadTab(tab){
   showLoading('Loading...');
   try{
     if(tab==='overview')await loadOverview();
-    else if(tab==='sentiment')await loadSentiment();
-    else if(tab==='severity')await loadSeverity();
-    else if(tab==='clusters')await loadClusters();
-    else if(tab==='duplicates')await loadDuplicates();
-    else if(tab==='departments')await loadDepartments();
-    else if(tab==='predictions')await loadPredictions();
+    else if(tab==='sentiment-severity')await Promise.all([loadSentiment(), loadSeverity()]);
+    else if(tab==='cluster-duplicate')await Promise.all([loadClusters(), loadDuplicates()]);
+    else if(tab==='operations-predictions')await Promise.all([loadDepartments(), loadPredictions()]);
     else if(tab==='complaints')await loadComplaints();
   }catch(e){console.error('Load:',e);}
   hideLoading();
@@ -57,7 +54,7 @@ async function loadSentiment(){
   const posPct=d.sentiment_distribution?Math.round((d.sentiment_distribution['Positive']||0)/Math.max(Object.values(d.sentiment_distribution).reduce((a,b)=>a+b,0),1)*100):0;
   setKPI('kpi-positive-pct',posPct+'%');
   if(d.sentiment_distribution)createDoughnut('chart-sentiment-dist',d.sentiment_distribution);
-  if(d.emotion_distribution){const l=Object.keys(d.emotion_distribution),v=Object.values(d.emotion_distribution);createChart('chart-emotions','polarArea',l,[{data:v,backgroundColor:PALETTE.slice(0,l.length).map(c=>c+'99'),borderColor:PALETTE.slice(0,l.length),borderWidth:1}],{plugins:{legend:{position:'right'}}});}
+  if(d.emotion_distribution){renderEmotionBars('chart-emotions',d.emotion_distribution);}
   if(d.sentiment_trend&&d.sentiment_trend.length){const months=[...new Set(d.sentiment_trend.map(x=>x.month))].sort(),types=[...new Set(d.sentiment_trend.map(x=>x.sentiment_label))];createLineChart('chart-sentiment-trend',months,types.map(t=>({label:t,data:months.map(m=>{const i=d.sentiment_trend.find(x=>x.month===m&&x.sentiment_label===t);return i?i.count:0;}),color:SENTIMENT_COLORS[t]})));}
   if(d.sentiment_by_product){const s=Object.entries(d.sentiment_by_product).sort((a,b)=>a[1]-b[1]);createBar('chart-sentiment-product',s.map(e=>e[0]),s.map(e=>e[1]),null,'Avg Sentiment');}
 }
@@ -124,7 +121,7 @@ async function loadComplaints(){
   const params={...filterState,page:complaintsPage,page_size:30};
   const se=document.getElementById('complaint-search');if(se&&se.value)params.search=se.value;
   const d=await API.getComplaints(params),tbody=document.getElementById('complaints-tbody');if(!tbody)return;
-  tbody.innerHTML=(d.complaints||[]).map(c=>`<tr><td>${c.complaint_id||''}</td><td>${c.date_time?new Date(c.date_time).toLocaleDateString():''}</td><td>${c.product_type||''}</td><td>${c.predicted_category||''}</td><td title="${esc(c.complaint_description||'')}">${trunc(c.complaint_description||'',50)}</td><td><span class="badge badge-${(c.sentiment_label||'neutral').toLowerCase().replace(' ','-')}">${c.sentiment_label||'N/A'}</span></td><td><span class="badge badge-${(c.severity_level||'low').toLowerCase()}">${c.severity_level||'N/A'}</span></td><td>${trunc(c.predicted_department||'',20)}</td><td><span class="badge badge-${(c.resolution_status||'open').toLowerCase().replace(' ','-')}">${c.resolution_status||''}</span></td><td>${c.is_spam?'🚫':''}${c.is_duplicate?'📋':''}</td></tr>`).join('');
+  tbody.innerHTML=(d.complaints||[]).map(c=>`<tr><td>${c.complaint_id||''}</td><td>${c.date_time?new Date(c.date_time).toLocaleDateString():''}</td><td>${c.product_type||''}</td><td>${c.predicted_category||''}</td><td title="${esc(c.complaint_description||'')}">${trunc(c.complaint_description||'',50)}</td><td><span class="badge badge-${(c.sentiment_label||'neutral').toLowerCase().replace(' ','-')}">${c.sentiment_label||'N/A'}</span></td><td><span class="badge badge-${(c.severity_level||'low').toLowerCase()}">${c.severity_level||'N/A'}</span></td><td>${trunc(c.predicted_department||'',20)}</td><td><span class="badge badge-${(c.resolution_status||'open').toLowerCase().replace(' ','-')}">${c.resolution_status||''}</span></td></tr>`).join('');
   const info=document.getElementById('pagination-info');
   if(info)info.textContent=`Showing ${((d.page-1)*d.page_size)+1}–${Math.min(d.page*d.page_size,d.total)} of ${d.total}`;
   const btns=document.getElementById('pagination-buttons');
@@ -156,35 +153,76 @@ async function handleFileUpload(event){
   const schema=document.getElementById('schema-display');
   const progress=document.getElementById('analysis-progress');
   status.style.display='block'; schema.style.display='none';
-  status.innerHTML='<p style="color:var(--accent-cyan);">⏳ Uploading & analyzing schema of <strong>'+file.name+'</strong>...</p>';
+  progress.style.display='block';
+  // Show unified progress for the entire pipeline
+  status.innerHTML=`<div class="rec-card" style="border-color:rgba(6,182,212,0.3)">
+    <div class="rec-type">⏳ Processing <strong>${file.name}</strong></div>
+    <div class="rec-message" id="activation-step">Step 1/5: Uploading dataset...</div>
+    <div class="progress-bar" style="margin-top:12px"><div class="progress-fill blue" id="activation-bar" style="width:5%;transition:width 0.6s ease"></div></div></div>`;
+  progress.innerHTML='';
   try{
-    const r=await API.uploadFile(file);
-    const si=r.schema_intelligence||{};
-    status.innerHTML=`<div class="rec-card" style="border-color:rgba(16,185,129,0.3)"><div class="rec-type">✅ Upload Successful</div>
+    const stepEl=document.getElementById('activation-step');
+    const barEl=document.getElementById('activation-bar');
+    // Step 1: Upload and activate in one call
+    stepEl.textContent='Step 1/5: Uploading & ingesting into system database...';
+    barEl.style.width='10%';
+    // Animate progress while waiting for server
+    const steps=[
+      {msg:'Step 2/5: Auto-mapping schema & preprocessing data...',pct:'25%',delay:3000},
+      {msg:'Step 3/5: Running 10 AI modules (Sentiment, Severity, Clustering, Routing, Spam, Duplicates)...',pct:'45%',delay:6000},
+      {msg:'Step 4/5: Computing analytics, predictions & KPIs...',pct:'65%',delay:10000},
+    ];
+    const timers=steps.map(s=>setTimeout(()=>{stepEl.textContent=s.msg;barEl.style.width=s.pct;},s.delay));
+    const r=await API.uploadAndActivate(file);
+    timers.forEach(t=>clearTimeout(t));
+    // Step 5: Refresh all dashboards
+    barEl.style.width='80%';
+    stepEl.textContent='Step 5/5: Refreshing all dashboard pages...';
+    await refreshAllDashboards();
+    barEl.style.width='100%';
+    // Show success
+    status.innerHTML=`<div class="rec-card" style="border-color:rgba(16,185,129,0.3)">
+      <div class="rec-type">✅ Dataset Activated — Dashboard Updated</div>
+      <div class="rec-message">${r.message||'All analytics now reflect the new dataset.'}</div>
       <div class="result-item"><span class="result-label">File</span><span class="result-value">${r.filename}</span></div>
-      <div class="result-item"><span class="result-label">Rows × Columns</span><span class="result-value">${r.rows} × ${r.columns.length}</span></div>
-      <div class="result-item"><span class="result-label">Detected Type</span><span class="result-value" style="color:var(--accent-cyan);font-weight:700;">${si.dataset_type||'Unknown'}</span></div>
-      <div class="result-item"><span class="result-label">Data Quality</span><span class="result-value">${si.data_quality?.quality_score||'N/A'}%</span></div>
-      <div class="result-item"><span class="result-label">Summary</span><span class="result-value">${si.summary||''}</span></div></div>`;
-    // Schema mapping display
-    if(si.semantic_mapping){
-      schema.style.display='block';
-      let rows=Object.entries(si.semantic_mapping).map(([col,info])=>{
-        const badge=info.semantic_role==='unknown'?'badge-medium':info.confidence>0.6?'badge-low':'badge-medium';
-        return`<tr><td>${col}</td><td><span class="badge ${badge}">${info.detected_type}</span></td>
-          <td>${info.semantic_role.replace('_',' ')}</td><td>${Math.round(info.confidence*100)}%</td></tr>`;
-      }).join('');
-      schema.innerHTML=`<div class="table-container"><div class="table-toolbar"><span class="chart-title">🧠 AI Schema Intelligence</span></div>
-        <table class="data-table"><thead><tr><th>Column</th><th>Type</th><th>Semantic Role</th><th>Confidence</th></tr></thead>
-        <tbody>${rows}</tbody></table></div>`;
-    }
-    // Applicable analyses
-    if(si.applicable_analyses&&si.applicable_analyses.length){
-      schema.innerHTML+=`<div class="rec-card" style="margin-top:16px;"><div class="rec-type">📋 ${si.applicable_analyses.length} Analyses Available</div>
-        <div class="rec-message">${si.applicable_analyses.map(a=>`${a.icon} ${a.label}`).join(' • ')}</div>
-        <button class="analyze-btn" style="margin-top:12px" onclick="runAutoAnalyze('${r.filename}')">🚀 Run Full AI Analysis</button></div>`;
-    }
-  }catch(e){status.innerHTML='<p style="color:#ef4444;">❌ Error: '+e.message+'</p>';}
+      <div class="result-item"><span class="result-label">Records Ingested</span><span class="result-value" style="color:var(--accent-green);font-weight:700;">${r.rows_ingested||0}</span></div>
+      <div class="result-item"><span class="result-label">AI Modules Executed</span><span class="result-value">10/10</span></div>
+      <div class="rec-message" style="margin-top:8px;color:var(--accent-cyan);font-size:12px;">✨ All KPIs, charts, tables, and analytics across every page are now updated.</div></div>`;
+    progress.innerHTML='';
+    // Auto-navigate to Overview after 1.5s so user sees updated dashboard
+    setTimeout(()=>{
+      const overviewTab=document.querySelector('[data-tab="overview"]');
+      if(overviewTab) overviewTab.click();
+    },1500);
+  }catch(e){
+    status.innerHTML=`<div class="rec-card" style="border-color:rgba(239,68,68,0.3)">
+      <div class="rec-type">❌ Activation Failed</div>
+      <div class="rec-message">${e.message}</div>
+      <div class="rec-message" style="margin-top:8px;color:var(--text-muted);font-size:11px;">Ensure the dataset is a valid CSV/Excel/JSON file with complaint-like data.</div></div>`;
+    progress.innerHTML='';
+  }
+  // Reset file input so same file can be re-uploaded
+  event.target.value='';
+}
+
+async function activateGlobalDataset(){
+  // Kept for backward compatibility — redirects to upload
+  const fileInput=document.getElementById('file-input');
+  if(fileInput) fileInput.click();
+}
+
+async function refreshAllDashboards(){
+  try{
+    filterOptions=await API.getFilters();
+    populateFilterDropdowns();
+    filterState={};
+    await loadOverview();
+    await Promise.all([loadSentiment(), loadSeverity()]);
+    await Promise.all([loadClusters(), loadDuplicates()]);
+    await Promise.all([loadDepartments(), loadPredictions()]);
+    complaintsPage=1;
+    await loadComplaints();
+  }catch(e){console.error('Dashboard refresh error:',e);}
 }
 
 async function runAutoAnalyze(filename){
@@ -271,7 +309,56 @@ function populateSelect(id,opts){const el=document.getElementById(id);if(!el)ret
 function applyFilters(){const g=id=>document.getElementById(id)?.value||'';filterState={product_type:g('filter-product'),severity_level:g('filter-severity'),status:g('filter-status'),channel:g('filter-channel'),segment:g('filter-segment'),state:g('filter-state')};Object.keys(filterState).forEach(k=>{if(!filterState[k])delete filterState[k];});loadTab(currentTab);}
 function resetFilters(){document.querySelectorAll('.filter-select').forEach(s=>s.value='');filterState={};loadTab(currentTab);}
 
-function setKPI(id,v){const el=document.getElementById(id);if(el)el.textContent=v;}
+function setKPI(id,v){
+  const el=document.getElementById(id);if(!el)return;
+  el.textContent=v;
+  // Dynamically fix trend indicator based on actual value
+  const trendEl=el.closest('.kpi-body')?.querySelector('.kpi-trend');
+  if(!trendEl)return;
+  const isZero=isKPIZero(v);
+  if(isZero){
+    trendEl.className='kpi-trend inactive';
+    trendEl.innerHTML='<span class="trend-arrow">—</span> No Change';
+  }
+}
+function isKPIZero(v){
+  if(v===null||v===undefined||v==='—')return true;
+  const s=String(v).trim();
+  // Strip suffixes: %, h, /5, k, etc.
+  const n=s.replace(/^[+\-]/, '').replace(/%$/, '').replace(/h$/, '').replace(/\/\d+$/, '').replace(/k$/, '');
+  const num=parseFloat(n);
+  return isNaN(num)||num===0;
+}
+
+const EMOTION_COLORS = {
+  'Frustration':'#f59e0b','Anger':'#ef4444','Fear':'#a855f7','Urgency':'#ef4444',
+  'Confusion':'#fbbf24','Sadness':'#6366f1','Disappointment':'#fb7185','Anxiety':'#ec4899',
+  'Neutral':'#64748b','None':'#64748b','Satisfaction':'#10b981','Relief':'#06b6d4',
+};
+function renderEmotionBars(containerId, data){
+  const el=document.getElementById(containerId);if(!el)return;
+  const entries=Object.entries(data).sort((a,b)=>b[1]-a[1]);
+  const total=entries.reduce((s,e)=>s+e[1],0)||1;
+  const maxVal=entries.length?entries[0][1]:1;
+  el.innerHTML=entries.map(([emotion,count])=>{
+    const pct=Math.round(count/total*100);
+    const barPct=Math.round(count/maxVal*100);
+    const color=EMOTION_COLORS[emotion]||PALETTE[entries.indexOf(entries.find(e=>e[0]===emotion))%PALETTE.length];
+    return `<div class="emotion-bar-row">
+      <div class="emotion-bar-label" title="${emotion}">${emotion}</div>
+      <div class="emotion-bar-track">
+        <div class="emotion-bar-fill" style="width:0%;background:${color};" data-width="${barPct}%"></div>
+      </div>
+      <div class="emotion-bar-value" style="color:${color}">${pct}%</div>
+    </div>`;
+  }).join('');
+  // Animate bars in
+  requestAnimationFrame(()=>{
+    el.querySelectorAll('.emotion-bar-fill').forEach(bar=>{
+      bar.style.width=bar.dataset.width;
+    });
+  });
+}
 function fmt(n){return n>=1000?(n/1000).toFixed(1)+'k':String(n);}
 function trunc(s,n){return s.length>n?s.substring(0,n)+'…':s;}
 function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}

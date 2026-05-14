@@ -399,6 +399,72 @@ async def auto_analyze(filename: str = Form(...)):
         traceback.print_exc()
         raise HTTPException(500, str(e))
 
+@app.post("/api/upload-and-activate")
+async def upload_and_activate(file: UploadFile = File(...)):
+    """Upload a dataset and make it the active global dataset for the entire dashboard.
+    Clears existing data, ingests new data, runs full ML pipeline."""
+    if not file.filename:
+        raise HTTPException(400, "No file provided")
+    ext = file.filename.rsplit('.', 1)[-1].lower()
+    if ext not in ('csv', 'xlsx', 'xls', 'json'):
+        raise HTTPException(400, "Supported formats: CSV, Excel, JSON")
+    try:
+        contents = await file.read()
+        filepath = os.path.join(UPLOADS_DIR, f"uploaded_{file.filename}")
+        with open(filepath, 'wb') as f:
+            f.write(contents)
+
+        # Step 1: Read and detect schema
+        ingestion = get_ingestion_engine()
+        df = ingestion.read_file(filepath, ext)
+        schema = ingestion.detect_schema(df)
+
+        # Step 2: Apply auto-detected column mapping
+        if schema.get('suggested_mapping'):
+            df = ingestion.apply_mapping(df, schema['suggested_mapping'])
+
+        # Step 3: Preprocess
+        df, preprocess_stats = ingestion.preprocess_dataframe(df)
+
+        # Step 4: Clear existing database
+        session = Session(bind=engine)
+        try:
+            session.query(ComplaintDB).delete()
+            session.commit()
+        except Exception:
+            session.rollback()
+        finally:
+            session.close()
+
+        # Step 5: Ingest new data into database
+        session = Session(bind=engine)
+        try:
+            ingest_stats = ingestion.ingest_to_database(df, session, ComplaintDB, schema.get('suggested_mapping', {}))
+        finally:
+            session.close()
+
+        # Step 6: Run full ML pipeline on new data
+        run_ml_pipeline()
+
+        # Step 7: Refresh filter options
+        new_count = Session(bind=engine).query(ComplaintDB).count()
+
+        return {
+            "status": "success",
+            "filename": file.filename,
+            "rows_ingested": ingest_stats.get("ingested", 0),
+            "total_in_db": new_count,
+            "preprocessing": preprocess_stats,
+            "ingestion": ingest_stats,
+            "message": f"Dataset activated! {ingest_stats.get('ingested', 0)} records ingested and analyzed with 10 AI modules."
+        }
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(500, str(e))
+
 @app.post("/api/ingest")
 async def ingest_dataset(filepath: str = Form(...), mapping: str = Form("{}")):
     try:

@@ -56,4 +56,12 @@ const API = {
     if (!res.ok) throw new Error(`Analysis error: ${res.status}`);
     return res.json();
   },
+
+  async uploadAndActivate(file) {
+    const form = new FormData();
+    form.append('file', file);
+    const res = await fetch('/api/upload-and-activate', { method: 'POST', body: form });
+    if (!res.ok) throw new Error(`Activation error: ${res.status}`);
+    return res.json();
+  },
 };
