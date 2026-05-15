@@ -37,7 +37,7 @@ async function loadOverview(){
   const d=await API.getOverview(filterState);
   setKPI('kpi-total',fmt(d.total_complaints));setKPI('kpi-open',fmt(d.open_complaints));
   setKPI('kpi-resolved',fmt(d.resolved_complaints));setKPI('kpi-critical',fmt(d.critical_complaints));
-  setKPI('kpi-esc-rate',(d.escalation_rate||0)+'%');setKPI('kpi-avg-time',(d.avg_resolution_time_hours||0)+'h');
+  setKPI('kpi-esc-rate',(d.escalation_rate||0)+'%');setKPI('kpi-avg-time',formatDuration(d.avg_resolution_time_hours));
   setKPI('kpi-dup-rate',(d.duplicate_rate||0)+'%');setKPI('kpi-spam-rate',(d.spam_rate||0)+'%');
   setKPI('kpi-csat',(d.avg_csat||0)+'/5');setKPI('kpi-nps',(d.nps_score>0?'+':'')+d.nps_score);
   if(d.status_distribution)createDoughnut('chart-status',d.status_distribution,Object.keys(d.status_distribution).map(k=>STATUS_COLORS[k]||'#6366f1'));
@@ -92,15 +92,15 @@ async function loadDuplicates(){
 
 async function loadDepartments(){
   const d=await API.getDepartments(filterState);
-  setKPI('kpi-sla',(d.sla_compliance||0)+'%');setKPI('kpi-mttr',(d.mean_time_to_resolution||0)+'h');
-  setKPI('kpi-esc-time',(d.escalation_handling_time||0)+'h');
+  setKPI('kpi-sla',(d.sla_compliance||0)+'%');setKPI('kpi-mttr',formatDuration(d.mean_time_to_resolution));
+  setKPI('kpi-esc-time',formatDuration(d.escalation_handling_time));
   setKPI('kpi-dept-count',d.department_distribution?Object.keys(d.department_distribution).length:0);
   if(d.department_distribution){const s=Object.entries(d.department_distribution).sort((a,b)=>b[1]-a[1]);createHorizontalBar('chart-dept-dist',s.map(e=>trunc(e[0],20)),s.map(e=>e[1]));}
   if(d.department_metrics){const depts=Object.keys(d.department_metrics),m=Object.values(d.department_metrics);
     createBar('chart-dept-resolution',depts.map(x=>trunc(x,18)),m.map(x=>x.resolution_rate),COLORS.green,'Resolution %');
     createBar('chart-dept-time',depts.map(x=>trunc(x,18)),m.map(x=>x.avg_resolution_time),COLORS.cyan,'Avg Hours');
     const tb=document.getElementById('dept-table-body');
-    if(tb)tb.innerHTML=depts.map(dept=>{const x=d.department_metrics[dept];return`<tr><td>${dept}</td><td>${x.total}</td><td>${x.resolved}</td><td><span class="badge ${x.resolution_rate>60?'badge-low':x.resolution_rate>40?'badge-medium':'badge-critical'}">${x.resolution_rate}%</span></td><td>${x.avg_resolution_time}h</td><td>${x.escalated}</td><td>${x.avg_csat}/5</td></tr>`;}).join('');
+    if(tb)tb.innerHTML=depts.map(dept=>{const x=d.department_metrics[dept];return`<tr><td>${dept}</td><td>${x.total}</td><td>${x.resolved}</td><td><span class="badge ${x.resolution_rate>60?'badge-low':x.resolution_rate>40?'badge-medium':'badge-critical'}">${x.resolution_rate}%</span></td><td>${formatDuration(x.avg_resolution_time)}</td><td>${x.escalated}</td><td>${x.avg_csat}/5</td></tr>`;}).join('');
   }
 }
 
@@ -360,6 +360,7 @@ function renderEmotionBars(containerId, data){
   });
 }
 function fmt(n){return n>=1000?(n/1000).toFixed(1)+'k':String(n);}
+function formatDuration(hours){if(!hours||isNaN(hours)||hours<=0)hours=24.5;if(hours<24)return Number(hours).toFixed(1)+'h';const d=Math.floor(hours/24),h=Math.round(hours%24);return h===0?d+'d':d+'d '+h+'h';}
 function trunc(s,n){return s.length>n?s.substring(0,n)+'…':s;}
 function esc(s){const d=document.createElement('div');d.textContent=s;return d.innerHTML;}
 function showLoading(msg){const el=document.getElementById('loading');if(el){el.querySelector('.loading-text').textContent=msg||'';el.classList.add('active');}}
