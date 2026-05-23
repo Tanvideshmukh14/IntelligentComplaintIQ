@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # IntelligentConplaintIQ
 IntelligentComplaintIQ is an AI-powered complaint intelligence platform that helps organizations capture, analyze, and act on customer complaints . It combines a React dashboard, FastAPI backend, WebSocket live updates, analytics charts, and NLP-driven insights to surface trends, urgency, escalation risk, and high-priority issues quickly.
 =======
@@ -209,6 +208,3 @@ All dashboard endpoints support query parameters for filtering: `start_date`, `e
 ## 📄 License
 
 This project is for educational and demonstration purposes.
->>>>>>> 9dcd80f (Add Project Files)
-#   I n t e l l i g e n t C o m p l a i n t I Q  
- 
